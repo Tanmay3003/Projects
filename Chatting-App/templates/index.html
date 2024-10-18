@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #fff;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: calc(100% - 120px);
+            padding: 10px;
+        }
+        button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Application</h1>
+    <input type="text" id="username-input" placeholder="Enter your name..." />
+    <div id="chat"></div>
+    <input type="text" id="message-input" placeholder="Type your message here..." />
+    <button id="send-button">Send</button>
+
+    <script>
+        const chatDiv = document.getElementById('chat');
+        const input = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const usernameInput = document.getElementById('username-input');
+
+        // Function to fetch messages
+        function fetchMessages() {
+            fetch('/messages')
+                .then(response => response.json())
+                .then(data => {
+                    chatDiv.innerHTML = '';
+                    data.forEach(({ user, message }) => {
+                        const messageElement = document.createElement('div');
+                        messageElement.textContent = `${user}: ${message}`;
+                        chatDiv.appendChild(messageElement);
+                    });
+                });
+        }
+
+        // Send message function
+        sendButton.onclick = function() {
+            const username = usernameInput.value;
+            const message = input.value;
+            if (username && message) {
+                fetch('/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `username=${encodeURIComponent(username)}&message=${encodeURIComponent(message)}`
+                }).then(() => {
+                    input.value = ''; // Clear input field
+                    fetchMessages(); // Fetch updated messages
+                });
+            }
+        };
+
+        // Fetch messages every second
+        setInterval(fetchMessages, 1000);
+        fetchMessages(); // Initial fetch
+    </script>
+</body>
+</html>
+
